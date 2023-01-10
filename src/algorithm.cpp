@@ -52,7 +52,8 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
         for(int i = 0; i < neighbors.size(); i++){
             Spot* neighbor = neighbors[i];
             if(!neighbor->getclosed() && !neighbor->getwall()){
-                double temp = current->getg() + 1;
+                double temp = current->getg() + heuristics(current,neighbor);
+                // double temp = current->getg() + 1;
                 bool newpath = false;
                 if(neighbor->getopen()){
                     if(temp < neighbor->getg()){
@@ -73,19 +74,46 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
                 }
             }
         }
+        // sleep(1);
     }
     return false;
 }
 
 double Algorithm::heuristics(Spot* neighbor, Spot* goal){
-    int i = abs(goal->geti() - neighbor->geti());
-    int j = abs(goal->getj() - neighbor->getj());
-    return i+j;
+    // double cost = abs(goal->geti() - neighbor->geti()) + abs(goal->getj() - neighbor->getj());
+    double a = pow(goal->geti()-neighbor->geti(),2);
+    double b = pow(goal->getj()-neighbor->getj(),2);
+    double cost = sqrt(a + b);
+    return cost;
 }
 
 Spot* Algorithm::findLowestf(std::vector<Spot*>& Set){
     std::vector<Spot*> openSet = Set;
-    openSet = quicksort(openSet, 0, openSet.size()-1);
+    // for(int i = 0; i < openSet.size(); i++){
+    //     std::cout << std::fixed << std::setprecision(1);
+    //     std::cout << openSet[i]->getf() << " ";
+    // }
+    // std::cout << std::endl;
+    // openSet = quicksort(openSet, 0, openSet.size()-1);
+    // for(int i = 0; i < openSet.size(); i++){
+    //     std::cout << openSet[i]->getf() << " ";
+    // }
+    int index = 0;
+    double min = INT_MAX;
+    for(int i = 0; i < openSet.size(); i++){
+        if(min > openSet[i]->getf()){
+            index = i;
+            min = openSet[i]->getf();
+        }
+    }
+    Spot* temp = openSet[index];
+    openSet[index] = openSet[openSet.size()-1];
+    openSet[openSet.size()-1] = temp;
+    // for(int i = 0; i < openSet.size(); i++){
+    //     std::cout << openSet[i]->getf() << " ";
+    // }
+    std::cout << std::endl;
+    std::cout << std::endl;
     Set = openSet;
     return Set[Set.size()-1];
 }
@@ -96,8 +124,8 @@ std::vector<Spot*> Algorithm::quicksort(std::vector<Spot*> Set, int left, int ri
     int j = right;
     Spot* base = Set[left];
     while(i<j){
-        while(i < j && Set[j]->getf() <= base->getf()){ j--;}
-        while(i < j && Set[j]->getf() > base->getf()){ i++;}
+        while(i < j && Set[j]->getf() < base->getf()){ j--;}
+        while(i < j && Set[j]->getf() >= base->getf()){ i++;}
         if(i < j){
             Spot* temp = Set[i];
             Set[i] = Set[j];
@@ -128,19 +156,19 @@ void Algorithm::addNeighbors(Spot* spot, Spot** map, int rows, int cols){
     if (j > 0){
         neighbors.push_back(&(map[j-1][i]));
     }
-    // // diagonals
-    // if (i < cols && j < rows){
-    //     neighbors.push_back(&(map[j+1][i+1]));
-    // }
-    // if (i > 0 && j > 0){
-    //     neighbors.push_back(&(map[j-1][i-1]));
-    // }
-    // if (i < cols && j > 0){
-    //     neighbors.push_back(&(map[j-1][i+1]));
-    // }
-    // if (i > 0 && j < rows){
-    //     neighbors.push_back(&(map[j+1][i-1]));
-    // }
+    // diagonals
+    if (i < cols-1 && j < rows-1){
+        neighbors.push_back(&(map[j+1][i+1]));
+    }
+    if (i > 0 && j > 0){
+        neighbors.push_back(&(map[j-1][i-1]));
+    }
+    if (i < cols-1 && j > 0){
+        neighbors.push_back(&(map[j-1][i+1]));
+    }
+    if (i > 0 && j < rows-1){
+        neighbors.push_back(&(map[j+1][i-1]));
+    }
     spot->update_neighbors(neighbors);
 }
 
