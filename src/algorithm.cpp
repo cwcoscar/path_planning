@@ -2,47 +2,24 @@
 
 using namespace AStar;
 
-bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int height, int width){
+bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
     // Initialize openSet and closedSet
     std::vector<Spot*> openSet;
     std::vector<Spot*> closedSet;
 
     // //show map, start and goal
-    // for(int j = height-1; j >= -1; j--){
-    //     if(j < 10 && j >= 0) std::cout << " ";
-    //     std::cout << " " << j;
-    //     if(j > -1){
-    //         for(int i = 0; i < width; i++){
-    //             if(start->geti() == i && start->getj() == j) std::cout << "\033[32m";
-    //             else if(goal->geti() == i && goal->getj() == j) std::cout << "\033[33m";
-    //             if(map[j][i].getwall()){
-    //                 std::cout << "  1";
-    //             }
-    //             else{
-    //                 std::cout << "  0";
-    //             }
-    //             std::cout << "\033[0m";
-    //         }
-    //     }
-    //     else if(j == -1){
-    //         for(int i = 0; i < width; i++){
-    //             if(i < 10) std::cout << "  " << i;
-    //             else std::cout << " " << i;
-    //         }
-    //     }
-    //     std::cout << std::endl;
-    // }
+    // show_map_in_terminal(rows, cols, start, goal, map);
     
     // Initialize neighbors
-    for(int j = 0; j < height; j++){
-        for(int i = 0; i < width; i++){
-            addNeighbors(&(map[j][i]), map, height, width);
+    for(int j = 0; j < rows; j++){
+        for(int i = 0; i < cols; i++){
+            addNeighbors(&(map[j][i]), map, rows, cols);
         }
     }
 
     // start and destination are never obstacles
     if (start->getwall() || goal->getwall()){
-        std::cout << "ERROR: One of start or goal is obstacle !" << std::endl;
+        std::cout << "\033[31m" << "ERROR: One of start or goal is obstacle !" << "\033[0m" << std::endl;
         return false;
     }
 
@@ -135,34 +112,61 @@ std::vector<Spot*> Algorithm::quicksort(std::vector<Spot*> Set, int left, int ri
     return Set;
 }
 
-void Algorithm::addNeighbors(Spot* spot, Spot** map, int height, int width){
+void Algorithm::addNeighbors(Spot* spot, Spot** map, int rows, int cols){
     int i = spot->geti();
     int j = spot->getj();
     std::vector<Spot*> neighbors;
-    if (i < width-1){
+    if (i < cols-1){
         neighbors.push_back(&(map[j][i+1]));
     }
     if (i > 0){
         neighbors.push_back(&(map[j][i-1]));
     }
-    if (j < height-1){
+    if (j < rows-1){
         neighbors.push_back(&(map[j+1][i]));
     }
     if (j > 0){
         neighbors.push_back(&(map[j-1][i]));
     }
     // // diagonals
-    // if (i < width && j < height){
+    // if (i < cols && j < rows){
     //     neighbors.push_back(&(map[j+1][i+1]));
     // }
     // if (i > 0 && j > 0){
     //     neighbors.push_back(&(map[j-1][i-1]));
     // }
-    // if (i < width && j > 0){
+    // if (i < cols && j > 0){
     //     neighbors.push_back(&(map[j-1][i+1]));
     // }
-    // if (i > 0 && j < height){
+    // if (i > 0 && j < rows){
     //     neighbors.push_back(&(map[j+1][i-1]));
     // }
     spot->update_neighbors(neighbors);
+}
+
+void show_map_in_terminal(int rows, int cols, Spot* start, Spot* goal, Spot** map){
+    for(int j = rows-1; j >= -1; j--){
+        if(j < 10 && j >= 0) std::cout << " ";
+        std::cout << " " << j;
+        if(j > -1){
+            for(int i = 0; i < cols; i++){
+                if(start->geti() == i && start->getj() == j) std::cout << "\033[32m";
+                else if(goal->geti() == i && goal->getj() == j) std::cout << "\033[33m";
+                if(map[j][i].getwall()){
+                    std::cout << "  1";
+                }
+                else{
+                    std::cout << "  0";
+                }
+                std::cout << "\033[0m";
+            }
+        }
+        else if(j == -1){
+            for(int i = 0; i < cols; i++){
+                if(i < 10) std::cout << "  " << i;
+                else std::cout << " " << i;
+            }
+        }
+        std::cout << std::endl;
+    }
 }
