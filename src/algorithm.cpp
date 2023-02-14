@@ -112,8 +112,6 @@ Spot* Algorithm::findLowestf(std::vector<Spot*>& Set){
     // for(int i = 0; i < openSet.size(); i++){
     //     std::cout << openSet[i]->getf() << " ";
     // }
-    std::cout << std::endl;
-    std::cout << std::endl;
     Set = openSet;
     return Set[Set.size()-1];
 }

@@ -68,20 +68,32 @@ void Planner::plan(){
         double width = (double)cols * edgeLength_;
 
         std::cout << "Map info:" << std::endl;
-        std::cout << "height(m): " << height << std::endl;
-        std::cout << "width(m): " << width << std::endl;
-        std::cout << "rows: " << rows << std::endl;
-        std::cout << "columns: " << cols << std::endl;
+        std::cout << "  height(m): " << height << std::endl;
+        std::cout << "  width(m): " << width << std::endl;
+        std::cout << "  rows: " << rows << std::endl;
+        std::cout << "  columns: " << cols << std::endl;
+        std::cout << std::endl;
 
         Spot** map = new Spot*[rows];
         for(int j = 0; j < rows; j++){
             map[j] =new Spot[cols];
             for(int i = 0; i < cols; i++){
-                bool obstacle = grid_->data[rows * j + i] > 0 ? true : false;
+                bool obstacle = grid_->data[cols * j + i] > 0 ? true : false;
                 map[j][i] = Spot(i, j, obstacle, edgeLength_);
             }
         }
-        
+        // for(int j = rows-1; j >= 0; j--){
+        //     for(int i = 0; i < cols; i++){
+        //         if(map[j][i].getwall()){
+        //             std::cout << "\033[31m" << map[j][i].getwall() << "\033[0m";
+        //         }
+        //         else{
+        //             std::cout << "0";
+        //         }
+        //     }
+        //     std::cout << std::endl;
+        // }
+    
         //retreive start
         int i_s = floor(start_.pose.pose.position.x/edgeLength_);
         int j_s = floor(start_.pose.pose.position.y/edgeLength_);
@@ -93,6 +105,7 @@ void Planner::plan(){
         int j_g = floor(goal_.pose.position.y/edgeLength_);
         Spot* goal_pos = &map[j_g][i_g];
         std::cout << "goal (i,j) = (" << goal_pos -> geti() << ", " << goal_pos -> getj() << ") : " << goal_pos->getwall() << std::endl;
+        std::cout << std::endl;
         
         // Find solution
         Algorithm astar;
