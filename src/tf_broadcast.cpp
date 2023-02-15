@@ -34,11 +34,11 @@ int main(int argc, char** argv) {
       tf::poseMsgToTF(grid->info.origin, tfPose);
     }
 
-    // odom to map
-    broadcaster.sendTransform(
-      tf::StampedTransform(
-        tf::Transform(tf::Quaternion(0, 0, 0, 1), tfPose.getOrigin()),
-        ros::Time::now(), "odom", "map"));
+    // world to map
+    // broadcaster.sendTransform(
+    //   tf::StampedTransform(
+    //     tf::Transform(tf::Quaternion(0, 0, 0, 1), tfPose.getOrigin()),
+    //     ros::Time::now(), "world", "map"));
 
     // map to path
     broadcaster.sendTransform(

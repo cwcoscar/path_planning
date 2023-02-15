@@ -7,6 +7,7 @@
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
+#include <Eigen/Dense>
 #include <visualization_msgs/MarkerArray.h>
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
@@ -47,7 +48,7 @@ namespace AStar{
             /// Flags for allowing the planner to plan
             bool validGoal_ = false;
             /// length of a cell's edge (meter)
-            double edgeLength_ = 1;
+            double edgeLength_ = 2.8;
 
         public:
             /// The default constructor

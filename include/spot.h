@@ -32,6 +32,13 @@ namespace AStar {
                 y_ = edgeLength/2 + (double)(j) * edgeLength;
                 wall_ = obstacle;
             }
+            Spot(int i, int j, double x, double y, bool obstacle, double edgeLength){
+                i_ = i;
+                j_ = j;
+                x_ = x;
+                y_ = y;
+                wall_ = obstacle;
+            }
             int geti(){ return i_;}
             int getj(){ return j_;}
             double getx(){ return x_;}
