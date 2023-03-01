@@ -2,5 +2,5 @@
     <node name="astar" pkg="path_planning" type="astar" /> 
     <node name="tf_broadcast" pkg="path_planning" type="tf_broadcast" />
     <node name="map_server" pkg="map_server" type="map_server" args="$(find path_planning)/maps/map.yaml" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find path_planning)/launch/rotated_map.rviz" />
+    <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find path_planning)/launch/rotated_map.rviz" /> -->
 </launch>

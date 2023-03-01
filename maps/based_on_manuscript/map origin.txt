@@ -1,0 +1,6 @@
+image: route1.png
+resolution: 2.68
+origin: [94179, 208976, -0.2] #[position_x, position_y, yaw(rads)]
+occupied_thresh: 0.1
+free_thresh: 0.05
+negate: 0

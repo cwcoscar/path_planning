@@ -128,14 +128,17 @@ void Planner::plan(){
             for(int i = 0; i < cols; i++){
                 bool obstacle = grid_->data[cols * j + i] > 0 ? true : false;
 
-                if(tf::getYaw(grid_->info.origin.orientation) != 0){
-                    v << (0.5+i)*edgeLength_, (0.5+j)*edgeLength_;
-                    rotate_counterclockwise(v,v_rotateback,map_yaw);
-                    map[j][i] = Spot(i, j, v_rotateback(0)+map_origin_x, v_rotateback(1)+map_origin_y, obstacle, edgeLength_);
-                }
-                else{
-                    map[j][i] = Spot(i, j, obstacle, edgeLength_);
-                }
+                // if(tf::getYaw(grid_->info.origin.orientation) != 0){
+                //     v << (0.5+i)*edgeLength_, (0.5+j)*edgeLength_;
+                //     rotate_counterclockwise(v,v_rotateback,map_yaw);
+                //     map[j][i] = Spot(i, j, v_rotateback(0)+map_origin_x, v_rotateback(1)+map_origin_y, obstacle, edgeLength_);
+                // }
+                // else{
+                //     map[j][i] = Spot(i, j, obstacle, edgeLength_);
+                // }
+                v << (0.5+i)*edgeLength_, (0.5+j)*edgeLength_;
+                rotate_counterclockwise(v,v_rotateback,map_yaw);
+                map[j][i] = Spot(i, j, v_rotateback(0)+map_origin_x, v_rotateback(1)+map_origin_y, obstacle, edgeLength_);
             }
         }
         // for(int j = rows-1; j >= 0; j--){
