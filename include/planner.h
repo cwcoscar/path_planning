@@ -3,6 +3,14 @@
 
 #include <iostream>
 #include <ctime>
+#include <vector>
+#include <std_msgs/Bool.h>
+#include <tf/transform_datatypes.h>
+
+#include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/Waypoint.h>
+#include <autoware_msgs/Lane.h>
+
 
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
@@ -35,6 +43,8 @@ namespace AStar{
             // tf::StampedTransform transform;
             /// A publisher publishing the path for RViz
             ros::Publisher pubpath_;
+            // A publisher publishing the path for waypoint
+            ros::Publisher lane_pub_;            
             /// The path produced by the A* algorithm
             visualization_msgs::MarkerArray path_;
             /// A pointer to the grid the planner runs on
@@ -65,6 +75,8 @@ namespace AStar{
             void visualize_path(Spot* goal, Spot** map);
 
             void visualize_clear();
+            
+            void createWayPoint(Spot* goal);
     };
 }
 #endif // PLANNER_H
