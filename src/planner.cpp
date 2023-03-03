@@ -5,6 +5,7 @@ using namespace AStar;
 Planner::Planner(){
     pubStart_ = n_.advertise<geometry_msgs::PoseStamped>("/move_base_simple/start", 1);
     pubpath_ = n_.advertise<visualization_msgs::MarkerArray>("/path", 1);
+    lane_pub_ = n_.advertise<autoware_msgs::LaneArray>("/based/lane_waypoints_raw", 10, true);
 
     subMap_ = n_.subscribe("/map", 1, &Planner::CallbacksetMap, this);
     subGoal_ = n_.subscribe("/move_base_simple/goal", 1, &Planner::CallbacksetGoal, this);
@@ -30,6 +31,10 @@ void rotate_counterclockwise(Eigen::VectorXd& vec, Eigen::VectorXd& vec_rotated,
     Eigen::MatrixXd rotation_matrix;
     rotation_mat(angle, rotation_matrix);
     vec_rotated = rotation_matrix*vec;
+}
+
+inline double kmph2mps(double velocity_kmph){
+  return (velocity_kmph * 1000) / (60 * 60);
 }
 
 void Planner::CallbacksetStart(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& start_pos){
@@ -178,6 +183,7 @@ void Planner::plan(){
         if(sol){
             std::cout << "\033[33m" << "Find a solution (x,y):" << std::endl;
             visualize_path(goal_pos, map);
+            createWayPoint(goal_pos);
         }
         else{
             std::cout << "\033[31m" << "Did not find a solution" << "\033[0m" << std::endl;
@@ -233,3 +239,49 @@ void Planner::visualize_clear(){
     pubpath_.publish(path_);
     path_.markers.clear();
 }
+
+
+void Planner::createWayPoint(Spot* goal){
+    autoware_msgs::LaneArray lane_array;
+    autoware_msgs::Lane lane;
+    std::vector<autoware_msgs::Waypoint> wps;
+    Spot* node = goal;
+    int count = 0;
+    while (node != nullptr){
+        count = count +1;
+        autoware_msgs::Waypoint wp;
+        wp.pose.pose.position.x = node->getx();
+        wp.pose.pose.position.y = node->gety();
+        wp.pose.pose.position.z = 1 ;//TODO
+        wp.twist.twist.linear.x = kmph2mps(10);
+        wp.change_flag = 0;
+        wp.wpstate.steering_state = 0;
+        wp.wpstate.accel_state = 0;
+        wp.wpstate.stop_state  = 0;
+        wp.wpstate.event_state = 0;
+        wps.emplace_back(wp);
+        node = node->getprev();
+
+    }
+    std::reverse(wps.begin(), wps.end());
+    size_t last = count - 1;
+    for (size_t i = 0; i < wps.size(); ++i)
+    {
+        if (i != last){
+        double yaw = atan2(wps.at(i + 1).pose.pose.position.y - wps.at(i).pose.pose.position.y,
+                            wps.at(i + 1).pose.pose.position.x - wps.at(i).pose.pose.position.x);
+        wps.at(i).pose.pose.orientation = tf::createQuaternionMsgFromYaw(yaw);
+        }
+        else{
+        wps.at(i).pose.pose.orientation = wps.at(i - 1).pose.pose.orientation;
+        }
+    }
+    lane.header.frame_id = "map";
+    lane.header.stamp = ros::Time::now();
+    
+    lane.waypoints = wps;
+    lane_array.lanes.emplace_back(lane);
+    lane_pub_.publish(lane_array);
+
+}
+
