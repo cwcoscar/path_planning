@@ -18,7 +18,7 @@ void Planner::CallbacksetMap(const nav_msgs::OccupancyGrid::Ptr map){
     edgeLength_ = map->info.resolution;
 };
 
-void rotation_mat(float& angle, Eigen::MatrixXd& rot_matrix){
+inline void rotation_mat(float& angle, Eigen::MatrixXd& rot_matrix){
     Eigen::MatrixXd matrix(2,2);
     matrix(0,0) = cos(angle);
     matrix(0,1) = -sin(angle);
@@ -27,7 +27,7 @@ void rotation_mat(float& angle, Eigen::MatrixXd& rot_matrix){
     rot_matrix = matrix;
 }
 
-void rotate_counterclockwise(Eigen::VectorXd& vec, Eigen::VectorXd& vec_rotated, float angle){
+inline void rotate_counterclockwise(Eigen::VectorXd& vec, Eigen::VectorXd& vec_rotated, float angle){
     Eigen::MatrixXd rotation_matrix;
     rotation_mat(angle, rotation_matrix);
     vec_rotated = rotation_matrix*vec;
@@ -50,25 +50,17 @@ void Planner::CallbacksetStart(const geometry_msgs::PoseWithCovarianceStamped::C
     startN.header.stamp = ros::Time::now();
 
     std::cout << "New start x:" << x << " y:" << y << " yaw:" << yaw << std::endl;
-    float map_origin_x = grid_->info.origin.position.x;
-    float map_origin_y = grid_->info.origin.position.y;
-    float map_width = (grid_->info.width)*edgeLength_;
-    float map_height = (grid_->info.height)*edgeLength_;
-    float map_yaw = tf::getYaw(grid_->info.origin.orientation);
     Eigen::VectorXd v(2);
     Eigen::VectorXd v_rotateback(2);
-    v << x-map_origin_x, y-map_origin_y;
-    rotate_counterclockwise(v,v_rotateback,-map_yaw);
-    // v_rotateback = rotation_matrix*v;
-    // std::cout << "v:" << std::endl << v << std::endl;
-    // std::cout << "rotation_matrix:" << std::endl << rotation_matrix << std::endl;
-    // std::cout << "v_rotateback:" << std::endl << v_rotateback << std::endl;
-
-    if ( v_rotateback(0) <= map_width && v_rotateback(0) >= 0 && 
-        v_rotateback(1) <= map_height && v_rotateback(1) >= 0) {
+    v << x-grid_->info.origin.position.x, y-grid_->info.origin.position.y;
+    rotate_counterclockwise(v,v_rotateback,-(tf::getYaw(grid_->info.origin.orientation)));
+    
+    // check if the start position is in the map area
+    if ( v_rotateback(0) <= (grid_->info.width)*edgeLength_ && v_rotateback(0) >= 0 && 
+        v_rotateback(1) <= (grid_->info.height)*edgeLength_ && v_rotateback(1) >= 0) {
         validStart_ = true;
         start_ = *start_pos;
-        plan();
+        // plan();
         // publish start for RViz
         pubStart_.publish(startN);
     } else {
@@ -83,21 +75,18 @@ void Planner::CallbacksetGoal(const geometry_msgs::PoseStamped::ConstPtr& goal_p
     float yaw = tf::getYaw(goal_pos->pose.orientation);
 
     std::cout << "New goal x:" << x << " y:" << y << " yaw:" << yaw << std::endl;
-    float map_origin_x = grid_->info.origin.position.x;
-    float map_origin_y = grid_->info.origin.position.y;
-    float map_width = (grid_->info.width)*edgeLength_;
-    float map_height = (grid_->info.height)*edgeLength_;
-    float map_yaw = tf::getYaw(grid_->info.origin.orientation);
+
     Eigen::VectorXd v(2);
     Eigen::VectorXd v_rotateback(2);
-    v << x-map_origin_x, y-map_origin_y;
-    rotate_counterclockwise(v,v_rotateback,-map_yaw);
+    v << x-grid_->info.origin.position.x, y-grid_->info.origin.position.y;
+    rotate_counterclockwise(v,v_rotateback,-(tf::getYaw(grid_->info.origin.orientation)));
 
-    if (v_rotateback(0) <= map_width && v_rotateback(0) >= 0 && 
-        v_rotateback(1) <= map_height && v_rotateback(1) >= 0) {
+    // check if the goal position is in the map area
+    if (v_rotateback(0) <= (grid_->info.width)*edgeLength_ && v_rotateback(0) >= 0 && 
+        v_rotateback(1) <= (grid_->info.height)*edgeLength_ && v_rotateback(1) >= 0) {
         validGoal_ = true;
         goal_ = *goal_pos;
-        plan();
+        // plan();
     } else {
         std::cout << "Invalid goal x:" << x << " y:" << y << " yaw:" << yaw << std::endl;
     }
@@ -106,6 +95,8 @@ void Planner::CallbacksetGoal(const geometry_msgs::PoseStamped::ConstPtr& goal_p
 
 void Planner::plan(){
     if (validStart_ && validGoal_) {
+        validStart_ = false;
+        validGoal_ = false;
         // Generate spot grid
         int rows = grid_->info.height;
         int cols = grid_->info.width;
@@ -132,31 +123,11 @@ void Planner::plan(){
             map[j] =new Spot[cols];
             for(int i = 0; i < cols; i++){
                 bool obstacle = grid_->data[cols * j + i] > 0 ? true : false;
-
-                // if(tf::getYaw(grid_->info.origin.orientation) != 0){
-                //     v << (0.5+i)*edgeLength_, (0.5+j)*edgeLength_;
-                //     rotate_counterclockwise(v,v_rotateback,map_yaw);
-                //     map[j][i] = Spot(i, j, v_rotateback(0)+map_origin_x, v_rotateback(1)+map_origin_y, obstacle, edgeLength_);
-                // }
-                // else{
-                //     map[j][i] = Spot(i, j, obstacle, edgeLength_);
-                // }
                 v << (0.5+i)*edgeLength_, (0.5+j)*edgeLength_;
                 rotate_counterclockwise(v,v_rotateback,map_yaw);
                 map[j][i] = Spot(i, j, v_rotateback(0)+map_origin_x, v_rotateback(1)+map_origin_y, obstacle, edgeLength_);
             }
         }
-        // for(int j = rows-1; j >= 0; j--){
-        //     for(int i = 0; i < cols; i++){
-        //         if(map[j][i].getwall()){
-        //             std::cout << "\033[31m" << map[j][i].getwall() << "\033[0m";
-        //         }
-        //         else{
-        //             std::cout << "0";
-        //         }
-        //     }
-        //     std::cout << std::endl;
-        // }
 
         //retreive start 
         v << (start_.pose.pose.position.x - map_origin_x), (start_.pose.pose.position.y - map_origin_y);
@@ -252,7 +223,7 @@ void Planner::createWayPoint(Spot* goal){
         autoware_msgs::Waypoint wp;
         wp.pose.pose.position.x = node->getx();
         wp.pose.pose.position.y = node->gety();
-        wp.pose.pose.position.z = 1 ;//TODO
+        wp.pose.pose.position.z = -3893.38; //Setting it wrong may cause problem publishing /safety_waypoint in the Astar_avoid.
         wp.twist.twist.linear.x = kmph2mps(10);
         wp.change_flag = 0;
         wp.wpstate.steering_state = 0;

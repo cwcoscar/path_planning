@@ -1,10 +1,4 @@
 <launch>
-    <node name="astar" pkg="path_planning" type="astar" /> 
-    <node name="tf_broadcast" pkg="path_planning" type="tf_broadcast" />
-    <node name="map_server" pkg="map_server" type="map_server" args="$(find path_planning)/maps/map.yaml" />
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find path_planning)/launch/rotated_map.rviz" />
-
-
     <arg name="load_csv" default="false" />
     <arg name="multi_lane_csv" default="/tmp/driving_lane.csv" />
     <arg name="replanning_mode" default="False" />
@@ -25,6 +19,10 @@
     <arg name="end_point_offset" default="1" />
     <arg name="use_decision_maker" default="false" />
 
+    <node name="astar" pkg="path_planning" type="astar"/>
+    <node name="tf_broadcast" pkg="path_planning" type="tf_broadcast" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(find path_planning)/maps/map.yaml" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find path_planning)/launch/rotated_map.rviz" />
     <node pkg="waypoint_maker" type="waypoint_replanner" name="waypoint_replanner" output="screen">
         <param name="replanning_mode" value="$(arg replanning_mode)" />
         <param name="realtime_tuning_mode" value="$(arg realtime_tuning_mode)" />
@@ -44,7 +42,6 @@
         <param name="end_point_offset" value="$(arg end_point_offset)" />
         <param name="use_decision_maker" value="$(arg use_decision_maker)" />
     </node>
-
     <node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" />
 
 </launch>

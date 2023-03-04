@@ -1,5 +1,7 @@
 #include "algorithm.h"
 
+#define DISTANCE(a,b) (sqrt(pow(a,2) + pow(b,2)))
+
 using namespace AStar;
 
 bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
@@ -52,8 +54,7 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
         for(int i = 0; i < neighbors.size(); i++){
             Spot* neighbor = neighbors[i];
             if(!neighbor->getclosed() && !neighbor->getwall()){
-                double temp = current->getg() + heuristics(current,neighbor);
-                // double temp = current->getg() + 1;
+                double temp = current->getg() + DISTANCE(current->geti()-neighbor->geti(),current->getj()-neighbor->getj());
                 bool newpath = false;
                 if(neighbor->getopen()){
                     if(temp < neighbor->getg()){
@@ -68,7 +69,7 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
                     neighbor->update_open(true);
                 }
                 if(newpath){
-                    neighbor->update_h(heuristics(neighbor,goal));
+                    neighbor->update_h(heuristics(neighbor->geti()-goal->geti(),neighbor->getj()-goal->getj()));
                     neighbor->update_f();
                     neighbor->update_prev(current);
                 }
@@ -79,12 +80,8 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
     return false;
 }
 
-double Algorithm::heuristics(Spot* neighbor, Spot* goal){
-    // double cost = abs(goal->geti() - neighbor->geti()) + abs(goal->getj() - neighbor->getj());
-    double a = pow(goal->geti()-neighbor->geti(),2);
-    double b = pow(goal->getj()-neighbor->getj(),2);
-    double cost = sqrt(a + b);
-    return cost;
+inline double Algorithm::heuristics(int a, int b){
+    return DISTANCE(a,b);
 }
 
 Spot* Algorithm::findLowestf(std::vector<Spot*>& Set){

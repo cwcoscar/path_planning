@@ -6,12 +6,6 @@
 #include <vector>
 #include <std_msgs/Bool.h>
 #include <tf/transform_datatypes.h>
-
-#include <autoware_msgs/LaneArray.h>
-#include <autoware_msgs/Waypoint.h>
-#include <autoware_msgs/Lane.h>
-
-
 #include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 #include <tf/transform_listener.h>
@@ -20,6 +14,9 @@
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <autoware_msgs/LaneArray.h>
+#include <autoware_msgs/Waypoint.h>
+#include <autoware_msgs/Lane.h>
 #include "spot.h"
 #include "algorithm.h"
 

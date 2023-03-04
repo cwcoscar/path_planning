@@ -12,7 +12,7 @@ namespace AStar {
         /// The deault constructor
         Algorithm() {}
         bool Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols);
-        double heuristics(Spot* neighbor, Spot* goal);
+        double heuristics(int a, int b);
         Spot* findLowestf(std::vector<Spot*>& Set);
         std::vector<Spot*> quicksort(std::vector<Spot*> Set, int left, int right);
         void addNeighbors(Spot* spot, Spot** map, int height, int width);

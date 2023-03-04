@@ -4,10 +4,6 @@
 //  WRITTEN:  2023-01-09
 //###################################################
 
-#include <cstring>
-#include <iostream>
-#include <ros/ros.h>
-
 #include "planner.h"
 
 int main(int argc, char** argv) {
@@ -15,8 +11,11 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "a_star");
 
     AStar::Planner astar_planning;
-    astar_planning.plan(); 
-
-    ros::spin();
+    ros::Rate loop_rate(5);
+    while(ros::ok()){
+        astar_planning.plan(); 
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
     return 0;
 }
