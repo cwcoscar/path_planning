@@ -46,7 +46,7 @@ namespace AStar {
             bool getwall(){ return wall_;}
             double getg(){ return cost_g_;}
             double geth(){ return cost_h_;}
-            double getf(){ return cost_f_;}
+            double getf() const{ return cost_f_;}
             double getopen(){ return inopenset_;}
             double getclosed(){ return inclosedset_;}
             Spot* getprev(){ return previous_;}

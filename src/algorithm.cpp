@@ -4,9 +4,23 @@
 
 using namespace AStar;
 
+//###################################################
+//                                    NODE COMPARISON
+//###################################################
+/*!
+   \brief A structure to sort nodes in a heap structure
+*/
+struct CompareNodes {
+  /// Sorting spots by increasing f value - the total estimated cost
+  bool operator()(const Spot* lhs, const Spot* rhs) const {
+    return lhs->getf() > rhs->getf();
+  }
+};
+
 bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
     // Initialize openSet and closedSet
-    std::vector<Spot*> openSet;
+    typedef boost::heap::binomial_heap<Spot*,boost::heap::compare<CompareNodes>> priorityQueue;
+    priorityQueue Open;
     std::vector<Spot*> closedSet;
 
     // //show map, start and goal
@@ -26,14 +40,14 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
     }
 
     // Add start into openSet
-    openSet.push_back(start);
+    Open.push(start);
     start->update_open(true);
 
     // start looping
 
-    while(openSet.size() != 0){
+    while(!Open.empty()){
         // find lowest f_cost index in openSet
-        Spot* current = findLowestf(openSet);
+        Spot* current = Open.top();
         // std::cout << "current:" << std::endl;
         // std::cout << "(" << current -> geti() << ", " << current -> getj() << ")  wall: " << current->getwall() 
         // << "  g: " << current->getg() << "  h: " << current->geth() << "  f: " << current->getf() << std::endl;
@@ -44,7 +58,7 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
         }
 
         // Else, remove current and add into closedSet
-        openSet.pop_back();
+        Open.pop();
         current->update_open(false);
         current->update_closed(true);
         
@@ -65,7 +79,7 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
                 else{
                     neighbor->update_g(temp);
                     newpath = true;
-                    openSet.push_back(neighbor);
+                    Open.push(neighbor);
                     neighbor->update_open(true);
                 }
                 if(newpath){
@@ -82,35 +96,6 @@ bool Algorithm::Astar(Spot* start, Spot* goal, Spot** map, int rows, int cols){
 
 inline double Algorithm::heuristics(int a, int b){
     return DISTANCE(a,b);
-}
-
-Spot* Algorithm::findLowestf(std::vector<Spot*>& Set){
-    std::vector<Spot*> openSet = Set;
-    // for(int i = 0; i < openSet.size(); i++){
-    //     std::cout << std::fixed << std::setprecision(1);
-    //     std::cout << openSet[i]->getf() << " ";
-    // }
-    // std::cout << std::endl;
-    // openSet = quicksort(openSet, 0, openSet.size()-1);
-    // for(int i = 0; i < openSet.size(); i++){
-    //     std::cout << openSet[i]->getf() << " ";
-    // }
-    int index = 0;
-    double min = INT_MAX;
-    for(int i = 0; i < openSet.size(); i++){
-        if(min > openSet[i]->getf()){
-            index = i;
-            min = openSet[i]->getf();
-        }
-    }
-    Spot* temp = openSet[index];
-    openSet[index] = openSet[openSet.size()-1];
-    openSet[openSet.size()-1] = temp;
-    // for(int i = 0; i < openSet.size(); i++){
-    //     std::cout << openSet[i]->getf() << " ";
-    // }
-    Set = openSet;
-    return Set[Set.size()-1];
 }
 
 std::vector<Spot*> Algorithm::quicksort(std::vector<Spot*> Set, int left, int right){

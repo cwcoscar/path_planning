@@ -3,6 +3,7 @@
 
 #include "spot.h"
 
+#include <boost/heap/binomial_heap.hpp>
 #include <nav_msgs/OccupancyGrid.h>
 
 namespace AStar {
