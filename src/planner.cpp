@@ -9,7 +9,7 @@ Planner::Planner(){
 
     subMap_ = n_.subscribe("/map", 1, &Planner::CallbacksetMap, this);
     subGoal_ = n_.subscribe("/move_base_simple/goal", 1, &Planner::CallbacksetGoal, this);
-    subStart_ = n_.subscribe("/initialpose", 1, &Planner::CallbacksetStart, this);
+    subStart_ = n_.subscribe("/astar/initialpose", 1, &Planner::CallbacksetStart, this);
 };
             
 void Planner::CallbacksetMap(const nav_msgs::OccupancyGrid::Ptr map){
@@ -253,6 +253,5 @@ void Planner::createWayPoint(Spot* goal){
     lane.waypoints = wps;
     lane_array.lanes.emplace_back(lane);
     lane_pub_.publish(lane_array);
-
 }
 
